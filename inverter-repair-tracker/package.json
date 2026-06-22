@@ -1,0 +1,14 @@
+{
+  "name": "inverter-repair-tracker",
+  "version": "1.0.0",
+  "description": "Premium Inverter Repair History Tracker Dashboard",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
