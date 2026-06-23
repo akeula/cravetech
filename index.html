@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InverterHub - Repair Management System</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <meta name="theme-color" content="#4f46e5">
+</head>
+<body>
+
+    <!-- Sidebar Navigation (Only visible to Staff Mode) -->
+    <aside id="app-sidebar">
+        <div class="brand">
+            <button class="mobile-sidebar-close" id="mobile-sidebar-close" aria-label="Close navigation menu">
+                <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2;"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round"/></svg>
+            </button>
+            <div class="brand-logo-container" id="brand-logo-container">
+                <!-- Fallback SVG icon when no custom logo is uploaded -->
+                <div class="brand-logo" id="default-logo-svg">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                </div>
+                <!-- Image tag to display base64 uploaded logo -->
+                <img id="company-logo-img" src="" alt="Logo" style="display: none; width: 100%; height: 100%; object-fit: contain; border-radius: 8px;">
+            </div>
+            <span class="brand-title" id="company-name-display">InverterHub</span>
+        </div>
+        
+        <nav style="flex-grow: 1;">
+            <ul class="nav-menu">
+                <li>
+                    <a class="nav-item active" id="nav-dashboard" data-view="dashboard-view">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+                        Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a class="nav-item" id="nav-registry" data-view="registry-view">
+                        <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 002-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                        Repair Registry
+                    </a>
+                </li>
+                <li>
+                    <a class="nav-item" id="nav-checkin" data-view="checkin-view">
+                        <svg viewBox="0 0 24 24"><path d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        New Check-In
+                    </a>
+                </li>
+                <li>
+                    <a class="nav-item" id="nav-settings" data-view="settings-view">
+                        <svg viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+                        Settings & Admin
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <a href="#" class="nav-item" onclick="app.switchToClientMode()" style="background: rgba(255,255,255,0.04); margin-bottom: 1rem; color: #fbbf24; border: 1px solid rgba(251,191,36,0.2);">
+                <svg viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                Customer Portal
+            </a>
+            <p>Version 2.0.0</p>
+            <p>&copy; 2026 InverterHub</p>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main id="app-main-content">
+        <!-- Mobile Navigation Bar -->
+        <div class="mobile-top-bar" id="mobile-top-bar">
+            <button class="btn-sidebar-toggle" id="btn-sidebar-toggle" aria-label="Toggle navigation menu">
+                <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2;"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/></svg>
+            </button>
+            <span class="mobile-brand-title">InverterHub</span>
+        </div>
+        
+        <!-- DASHBOARD VIEW -->
+        <section id="dashboard-view" class="view-section active-view">
+            <header>
+                <div class="header-title">
+                    <h1>Operations Dashboard</h1>
+                    <p>Overview of current service operations and key metrics.</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary" onclick="app.showCheckInView()">
+                        <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M12 4v16m8-8H4"/></svg>
+                        Check-In Inverter
+                    </button>
+                </div>
+            </header>
+            
+            <div class="dashboard-grid">
+                <div class="kpi-card card-total">
+                    <div class="kpi-info">
+                        <h3>Active Repairs</h3>
+                        <div class="kpi-val" id="kpi-active-repairs">0</div>
+                    </div>
+                    <div class="kpi-icon">
+                        <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+                    </div>
+                </div>
+                <div class="kpi-card card-ready">
+                    <div class="kpi-info">
+                        <h3>Ready for Collection</h3>
+                        <div class="kpi-val" id="kpi-ready-repairs">0</div>
+                    </div>
+                    <div class="kpi-icon">
+                        <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                </div>
+                <div class="kpi-card card-collected">
+                    <div class="kpi-info">
+                        <h3>Completed Repairs</h3>
+                        <div class="kpi-val" id="kpi-completed-repairs">0</div>
+                    </div>
+                    <div class="kpi-icon">
+                        <svg viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                    </div>
+                </div>
+                <div class="kpi-card card-time">
+                    <div class="kpi-info">
+                        <h3>Avg Turnaround Time</h3>
+                        <div class="kpi-val" id="kpi-turnaround-time">0.0 hrs</div>
+                    </div>
+                    <div class="kpi-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-details">
+                <div class="dashboard-panel">
+                    <div class="panel-header">
+                        <h2>Recent Activity Log</h2>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Real-time audit events</span>
+                    </div>
+                    <div class="activity-list" id="dashboard-activity-list">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+                
+                <div class="dashboard-panel">
+                    <div class="panel-header">
+                        <h2>Repairs by Brand</h2>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-radial">
+                            <svg viewBox="0 0 36 36" style="transform: rotate(-90deg); width:100%; height:100%;">
+                                <circle cx="18" cy="18" r="15.915" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="3"></circle>
+                                <circle id="brand-chart-segment" cx="18" cy="18" r="15.915" fill="none" stroke="var(--primary)" stroke-width="3" stroke-dasharray="0 100" stroke-dashoffset="0"></circle>
+                            </svg>
+                            <div class="chart-center-text">
+                                <div class="chart-center-val" id="chart-total-repairs-count">0</div>
+                                <div class="chart-center-lbl">Total</div>
+                            </div>
+                        </div>
+                        <div class="chart-legend" id="brand-chart-legend">
+                            <!-- Loaded dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- REGISTRY VIEW -->
+        <section id="registry-view" class="view-section">
+            <header>
+                <div class="header-title">
+                    <h1>Repair History Registry</h1>
+                    <p>Search and audit inverter repair histories.</p>
+                </div>
+                <div>
+                    <button class="btn btn-secondary" onclick="app.resetFilters()" style="margin-right: 0.5rem;">Reset Filters</button>
+                    <button class="btn btn-primary" onclick="app.showCheckInView()">New Ticket</button>
+                </div>
+            </header>
+            
+            <div class="filters-bar">
+                <div class="search-input-wrapper">
+                    <svg viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <input type="text" id="search-query" class="form-control" placeholder="Search customer, serial, model, ID...">
+                </div>
+                <div>
+                    <select id="filter-status" class="form-control">
+                        <option value="">All Statuses</option>
+                        <option value="Checked In">Checked In</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Ready for Collection">Ready for Collection</option>
+                        <option value="Collected">Collected</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div>
+                    <select id="filter-brand" class="form-control">
+                        <option value="">All Brands</option>
+                    </select>
+                </div>
+                <div>
+                    <select id="filter-tech" class="form-control">
+                        <option value="">All Technicians</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="table-panel">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ticket ID</th>
+                                <th>Inverter specifications</th>
+                                <th>Customer details</th>
+                                <th>Intake Details</th>
+                                <th>Status</th>
+                                <th>Assigned Tech</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="repairs-table-body">
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        
+        <!-- NEW CHECK-IN VIEW -->
+        <section id="checkin-view" class="view-section">
+            <header>
+                <div class="header-title">
+                    <h1>New Inverter Check-In</h1>
+                    <p>Register a new client inverter and log reported faults.</p>
+                </div>
+            </header>
+            
+            <div class="dashboard-panel" style="max-width: 800px; margin: 0 auto;">
+                <form id="checkin-form">
+                    <div class="form-grid">
+                        <h3 class="form-group-full" style="font-family: var(--font-heading); margin-bottom: 0.5rem; color: var(--primary-hover); border-bottom: 1px solid var(--border-color); padding-bottom: 0.25rem;">1. Customer Details</h3>
+                        <div class="form-group">
+                            <label class="form-label" for="cust-name">Customer Name <span class="text-danger">*</span></label>
+                            <input type="text" id="cust-name" class="form-control" required placeholder="e.g. John Doe">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="cust-phone">Phone Number <span class="text-danger">*</span></label>
+                            <input type="tel" id="cust-phone" class="form-control" required placeholder="e.g. 555-0199">
+                        </div>
+                        <div class="form-group form-group-full">
+                            <label class="form-label" for="cust-email">Email Address</label>
+                            <input type="email" id="cust-email" class="form-control" placeholder="e.g. john@example.com">
+                        </div>
+                        
+                        <h3 class="form-group-full" style="font-family: var(--font-heading); margin-top: 1rem; margin-bottom: 0.5rem; color: var(--primary-hover); border-bottom: 1px solid var(--border-color); padding-bottom: 0.25rem;">2. Inverter Specification</h3>
+                        <div class="form-group">
+                            <label class="form-label" for="inv-brand">Brand <span class="text-danger">*</span></label>
+                            <select id="inv-brand" class="form-control" required>
+                                <option value="">Select Brand</option>
+                                <option value="Luminous">Luminous</option>
+                                <option value="Growatt">Growatt</option>
+                                <option value="Victron Energy">Victron Energy</option>
+                                <option value="SMA">SMA</option>
+                                <option value="Schneider Electric">Schneider Electric</option>
+                                <option value="Fronius">Fronius</option>
+                                <option value="Sunsynk">Sunsynk</option>
+                                <option value="Deye">Deye</option>
+                                <option value="Other">Other (Specify in model)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="inv-model">Model Name/Number <span class="text-danger">*</span></label>
+                            <input type="text" id="inv-model" class="form-control" required placeholder="e.g. MultiPlus-II 48/5000">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="inv-serial">Serial Number <span class="text-danger">*</span></label>
+                            <input type="text" id="inv-serial" class="form-control" required placeholder="e.g. HQ2245ABCDE">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="inv-capacity">Capacity (kVA / kW) <span class="text-danger">*</span></label>
+                            <input type="text" id="inv-capacity" class="form-control" required placeholder="e.g. 5.0 kVA">
+                        </div>
+                        
+                        <h3 class="form-group-full" style="font-family: var(--font-heading); margin-top: 1rem; margin-bottom: 0.5rem; color: var(--primary-hover); border-bottom: 1px solid var(--border-color); padding-bottom: 0.25rem;">3. Intake Details</h3>
+                        <div class="form-group">
+                            <label class="form-label" for="intake-staff">Registered By <span class="text-danger">*</span></label>
+                            <select id="intake-staff" class="form-control" required>
+                                <option value="">Select Registered Staff</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Date Brought In</label>
+                            <input type="text" id="intake-date-display" class="form-control" disabled value="Automatically set to current time">
+                        </div>
+                        <div class="form-group form-group-full">
+                            <label class="form-label" for="intake-fault">Reported Fault Description <span class="text-danger">*</span></label>
+                            <textarea id="intake-fault" class="form-control" required placeholder="Describe what is wrong with the inverter..."></textarea>
+                        </div>
+                        
+                        <div class="form-group-full" style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: flex-end;">
+                            <button type="button" class="btn btn-secondary" onclick="app.showDashboardView()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Check-In Unit</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </section>
+        
+        <!-- SYSTEM & STAFF SETTINGS (ADMIN GATED) -->
+        <section id="settings-view" class="view-section">
+            <header>
+                <div class="header-title">
+                    <h1>Settings & Admin Panel</h1>
+                    <p>Configure company specs, logos, staff registries, and password security.</p>
+                </div>
+            </header>
+            
+            <!-- ADMIN LOGIN GATE -->
+            <div class="dashboard-panel" id="admin-auth-gate" style="max-width: 450px; margin: 3rem auto; text-align: center;">
+                <div class="kpi-icon" style="margin: 0 auto 1.5rem auto; background: rgba(79, 70, 229, 0.1); color: var(--primary);">
+                    <svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                </div>
+                <h2 style="font-family: var(--font-heading); margin-bottom: 0.5rem;">Admin Authentication</h2>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">Enter the system administrator PIN to access configurations.</p>
+                <form id="admin-auth-form">
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <input type="password" id="admin-pin-input" class="form-control" style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem;" placeholder="••••" required maxLength="6">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Unlock Settings</button>
+                </form>
+            </div>
+
+            <!-- UNLOCKED SETTINGS PANEL -->
+            <div id="admin-unlocked-settings" style="display: none;">
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 1.5rem;">
+                    <button class="btn btn-secondary" onclick="app.lockAdminSettings()">
+                        <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;margin-right:6px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                        Lock Admin Settings
+                    </button>
+                </div>
+
+                <div class="dashboard-details" style="grid-template-columns: 1.2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                    <!-- STAFF MANAGEMENT -->
+                    <div class="dashboard-panel">
+                        <div class="panel-header">
+                            <h2>Staff Directory</h2>
+                        </div>
+                        <div style="max-height: 250px; overflow-y: auto; margin-bottom: 1.5rem; border:1px solid var(--border-color); border-radius:10px;">
+                            <table style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Role</th>
+                                        <th style="text-align: right;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="staff-table-body">
+                                    <!-- Loaded dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <h3 style="font-family:var(--font-heading); font-size:1rem; margin-bottom:1rem;">Add Staff / Tech</h3>
+                        <form id="add-staff-form">
+                            <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+                                <div class="form-group">
+                                    <label class="form-label" for="staff-name">Name <span class="text-danger">*</span></label>
+                                    <input type="text" id="staff-name" class="form-control" required placeholder="e.g. Dave Miller">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="staff-role">Role <span class="text-danger">*</span></label>
+                                    <select id="staff-role" class="form-control" required>
+                                        <option value="Receptionist">Receptionist / Intake</option>
+                                        <option value="Technician">Technician</option>
+                                        <option value="Manager">Service Manager</option>
+                                    </select>
+                                </div>
+                                <div class="form-group-full" style="margin-top: 0.5rem;">
+                                    <button type="submit" class="btn btn-primary" style="width:100%;">Register Staff</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- LOGO & BRAND SETTINGS -->
+                    <div class="dashboard-panel">
+                        <div class="panel-header">
+                            <h2>Company Brand Settings</h2>
+                        </div>
+                        
+                        <div class="form-grid" style="grid-template-columns: 1fr;">
+                            <div class="form-group">
+                                <label class="form-label" for="company-name-input">Company Name</label>
+                                <input type="text" id="company-name-input" class="form-control" value="InverterHub">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="company-phone-input">Helpline Phone (for client WhatsApp links)</label>
+                                <input type="text" id="company-phone-input" class="form-control" placeholder="e.g. 2348031234567">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="country-code-input">Default Country Code (WhatsApp formatting)</label>
+                                <input type="text" id="country-code-input" class="form-control" placeholder="e.g. 234" value="234">
+                            </div>
+                            
+                            <div class="form-group" style="margin-top: 0.5rem;">
+                                <label class="form-label">Company Logo (PNG / JPG)</label>
+                                <div style="display: flex; gap: 1rem; align-items: center; margin-top: 0.5rem;">
+                                    <div style="width: 70px; height: 70px; border: 1px dashed var(--border-color); border-radius: 10px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2);" id="logo-preview-box">
+                                        <span id="logo-preview-placeholder" style="font-size:0.7rem; color:var(--text-muted);">No Logo</span>
+                                        <img id="logo-preview-img" src="" alt="Preview" style="display:none; width:100%; height:100%; object-fit:contain; border-radius:8px;">
+                                    </div>
+                                    <div style="flex-grow: 1;">
+                                        <input type="file" id="company-logo-input" accept="image/*" style="display: none;">
+                                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('company-logo-input').click()" style="width: 100%; margin-bottom: 0.5rem;">
+                                            Upload Image
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" onclick="app.removeLogo()" style="width: 100%; color:#f87171; border-color:rgba(248,113,113,0.2); font-size:0.8rem; padding:0.4rem;">
+                                            Remove Logo
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-top: 1rem; border-top:1px solid var(--border-color); padding-top:1.5rem;">
+                                <div class="form-group">
+                                    <label class="form-label" for="admin-pin-change">Change PIN</label>
+                                    <input type="password" id="admin-pin-change" class="form-control" placeholder="New PIN" maxLength="6">
+                                </div>
+                                <div class="form-group" style="justify-content: flex-end;">
+                                    <button type="button" class="btn btn-primary" onclick="app.updateBrandAndSecurity()">Save Configuration</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DIAGNOSTICS DEMO DATA -->
+                <div class="dashboard-panel" style="border-color: rgba(251,191,36,0.3); background: rgba(251,191,36,0.02);">
+                    <div class="panel-header">
+                        <h2 style="color:#fbbf24;">Developer Sandbox / Demonstration Tool</h2>
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+                        This system is running as a clean production slate. If you want to populate it with realistic mock data to test dashboard KPI formulas, activity timelines, and search filters, use this injector.
+                    </p>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-secondary" style="border-color:#fbbf24; color:#fbbf24;" onclick="app.injectDemoData()">
+                            Inject Demo Inverters & Staff
+                        </button>
+                        <button class="btn btn-secondary" style="border-color:#f87171; color:#f87171;" onclick="app.wipeAllData()">
+                            Wipe All Data (Fresh Empty Slate)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- CUSTOMER STATUS TRACKING VIEW (PUBLIC CUSTOMER PORTAL) -->
+        <section id="customer-view" class="view-section">
+            <div style="max-width: 650px; margin: 2rem auto;">
+                <div style="text-align: center; margin-bottom: 3rem;">
+                    <div style="width: 80px; height: 80px; margin: 0 auto 1.5rem auto;" id="cust-logo-container">
+                        <div class="brand-logo" id="cust-default-logo" style="width:100%; height:100%; margin:0;">
+                            <svg viewBox="0 0 24 24" style="width:40px; height:40px;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                        </div>
+                        <img id="cust-logo-img" src="" alt="Logo" style="display: none; width: 100%; height: 100%; object-fit: contain; border-radius: 12px;">
+                    </div>
+                    <h1 style="font-family: var(--font-heading); font-size: 2.25rem; font-weight: 700;" id="cust-company-name">InverterHub</h1>
+                    <p style="color: var(--text-muted); margin-top: 0.25rem;">Client Repair Tracking Portal</p>
+                </div>
+
+                <!-- SEARCH FORM CARD -->
+                <div class="dashboard-panel" id="cust-search-card" style="margin-bottom: 2rem;">
+                    <h2 style="font-family: var(--font-heading); font-size: 1.15rem; margin-bottom: 1.25rem; text-align: center;">Look Up Inverter Status</h2>
+                    <form id="cust-lookup-form">
+                        <div class="form-grid" style="grid-template-columns: 1fr;">
+                            <div class="form-group">
+                                <label class="form-label" for="cust-track-id">Ticket ID <span class="text-danger">*</span></label>
+                                <input type="text" id="cust-track-id" class="form-control" style="text-align: center; font-weight: 700; text-transform: uppercase;" placeholder="INV-2026-0001" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="cust-track-phone">Customer Phone Number <span class="text-danger">*</span></label>
+                                <input type="tel" id="cust-track-phone" class="form-control" style="text-align: center;" placeholder="e.g. 555-0199" required>
+                            </div>
+                            <div style="margin-top: 1rem;">
+                                <button type="submit" class="btn btn-primary" style="width: 100%;">Query Status</button>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="cust-lookup-error" style="display: none; margin-top: 1.25rem; color: #f87171; text-align: center; font-size: 0.9rem; font-weight: 600;">
+                        No active repair found matching that Ticket ID and Phone Number.
+                    </div>
+                </div>
+
+                <!-- TRACKING DETAILS STATUS BOARD (HIDDEN BY DEFAULT) -->
+                <div class="dashboard-panel" id="cust-status-board" style="display: none; animation: fadeIn var(--transition-normal);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                        <div>
+                            <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Ticket ID</span>
+                            <h2 style="font-family: var(--font-heading); font-size:1.5rem; font-weight:700; color:#fff;" id="cust-board-ticket-id">INV-2026-0001</h2>
+                        </div>
+                        <div>
+                            <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; text-align:right; display:block;">Current Status</span>
+                            <span class="status-badge" id="cust-board-status-badge" style="margin-top:0.25rem;">Checked In</span>
+                        </div>
+                    </div>
+
+                    <!-- STEPPER PIPELINE -->
+                    <div style="display: flex; justify-content: space-between; position: relative; margin: 2rem 0; padding: 0 0.5rem;">
+                        <!-- Pipeline background line -->
+                        <div style="position: absolute; top: 11px; left: 5%; right: 5%; height: 3px; background: rgba(255,255,255,0.08); z-index: 0;"></div>
+                        <!-- Active pipeline line -->
+                        <div id="cust-pipeline-fill" style="position: absolute; top: 11px; left: 5%; width: 0%; height: 3px; background: var(--primary); transition: width var(--transition-normal); z-index: 0;"></div>
+                        
+                        <!-- Step 1: Checked In -->
+                        <div style="display: flex; flex-direction: column; align-items: center; z-index: 1; width: 20%; text-align: center;">
+                            <div class="step-circle active" id="step-0" style="width:24px; height:24px; border-radius:50%; background:var(--bg-base); border:3px solid var(--border-color); display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:bold; color:var(--text-muted); transition: var(--transition-fast);">1</div>
+                            <span style="font-size: 0.75rem; font-weight: 600; margin-top: 0.5rem; color: var(--text-muted);" id="step-lbl-0">Checked In</span>
+                        </div>
+                        <!-- Step 2: Diagnostic/In Progress -->
+                        <div style="display: flex; flex-direction: column; align-items: center; z-index: 1; width: 20%; text-align: center;">
+                            <div class="step-circle" id="step-1" style="width:24px; height:24px; border-radius:50%; background:var(--bg-base); border:3px solid var(--border-color); display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:bold; color:var(--text-muted); transition: var(--transition-fast);">2</div>
+                            <span style="font-size: 0.75rem; font-weight: 600; margin-top: 0.5rem; color: var(--text-muted);" id="step-lbl-1">Repairing</span>
+                        </div>
+                        <!-- Step 3: Fixed / Ready -->
+                        <div style="display: flex; flex-direction: column; align-items: center; z-index: 1; width: 20%; text-align: center;">
+                            <div class="step-circle" id="step-2" style="width:24px; height:24px; border-radius:50%; background:var(--bg-base); border:3px solid var(--border-color); display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:bold; color:var(--text-muted); transition: var(--transition-fast);">3</div>
+                            <span style="font-size: 0.75rem; font-weight: 600; margin-top: 0.5rem; color: var(--text-muted);" id="step-lbl-2">Ready</span>
+                        </div>
+                        <!-- Step 4: Handed Over / Collected -->
+                        <div style="display: flex; flex-direction: column; align-items: center; z-index: 1; width: 20%; text-align: center;">
+                            <div class="step-circle" id="step-3" style="width:24px; height:24px; border-radius:50%; background:var(--bg-base); border:3px solid var(--border-color); display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:bold; color:var(--text-muted); transition: var(--transition-fast);">4</div>
+                            <span style="font-size: 0.75rem; font-weight: 600; margin-top: 0.5rem; color: var(--text-muted);" id="step-lbl-3">Collected</span>
+                        </div>
+                    </div>
+
+                    <!-- DATA BLOCKS -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem;">
+                        <div class="details-section" style="grid-column: span 2;">
+                            <h3 style="font-size:0.85rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.5rem;">Inverter Specifications</h3>
+                            <div style="font-size: 1.1rem; font-weight: 700; color:#fff;" id="cust-board-inv-name">Victron Energy MultiPlus-II</div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted);" id="cust-board-inv-specs">Model: 48/3000 | Serial: HQ2405RTS87 | Capacity: 3.0 kVA</div>
+                        </div>
+                        
+                        <div class="details-section">
+                            <h3 style="font-size:0.85rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.5rem;">Brought In Date</h3>
+                            <div style="font-weight: 600; color:#fff;" id="cust-board-brought-in">-</div>
+                        </div>
+                        <div class="details-section">
+                            <h3 style="font-size:0.85rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.5rem;">Estimated / Total Bill</h3>
+                            <div style="font-size:1.15rem; font-weight: 700; color:var(--status-ready-text);" id="cust-board-total-cost">₦0.00</div>
+                        </div>
+                        
+                        <div class="details-section" style="grid-column: span 2;">
+                            <h3 style="font-size:0.85rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.5rem;">Diagnostic / Repair Updates</h3>
+                            <div class="details-notes-box" id="cust-board-notes" style="background: rgba(0,0,0,0.2); border-color:var(--border-color);">
+                                Unit is checked in. Awaiting diagnostics by service technicians.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 2rem; display: flex; justify-content: center;">
+                        <button class="btn btn-secondary" onclick="app.resetCustomerLookup()">Back to Lookup</button>
+                    </div>
+                </div>
+
+                <!-- PORTAL ESCAPE CONTROLS -->
+                <div style="text-align: center; margin-top: 3rem;">
+                    <a href="#" style="color: var(--text-muted); font-size: 0.8rem; text-decoration: none;" onclick="app.openAdminEscapeGate(event)">
+                        🔒 Service Center Staff Login
+                    </a>
+                </div>
+            </div>
+            
+            <!-- FLOATING HELP WHATSAPP WIDGET -->
+            <div id="cust-whatsapp-float" style="position: fixed; bottom: 2rem; right: 2rem; z-index: 1000; display: none;">
+                <a id="cust-whatsapp-link" href="#" target="_blank" style="display: flex; align-items: center; gap: 10px; background: #25d366; color: #fff; text-decoration: none; padding: 0.8rem 1.25rem; border-radius: 9999px; box-shadow: 0 4px 20px rgba(37,211,102,0.4); font-weight: bold; font-size: 0.85rem; transition: transform var(--transition-fast);">
+                    <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: currentColor;"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.47l-6.256 1.638zm6.59-4.846c1.666.988 3.311 1.488 5.361 1.489 5.513 0 10.002-4.48 10.005-9.982.001-2.665-1.026-5.17-2.895-7.04-1.869-1.87-4.37-2.9-7.037-2.9-5.524 0-10.016 4.481-10.02 9.983-.001 2.01.528 3.975 1.542 5.68l-1.01 3.693 3.824-1.002zm10.963-7.445c-.302-.15-1.786-.881-2.062-.982-.276-.1-.476-.15-.676.15-.2.3-.776.982-.95 1.182-.175.2-.35.225-.652.075-.302-.15-1.275-.47-2.43-1.498-.896-.8-1.502-1.787-1.678-2.088-.175-.3-.018-.462.133-.611.135-.134.302-.35.453-.526.15-.175.2-.3.302-.5.1-.2.05-.375-.025-.526-.075-.15-.676-1.629-.926-2.228-.243-.584-.49-.504-.676-.513-.175-.009-.376-.01-.576-.01-.2 0-.526.075-.802.375-.276.3-1.052 1.028-1.052 2.51s1.077 2.903 1.227 3.102c.15.2 2.12 3.236 5.134 4.536.717.31 1.277.494 1.711.633.72.23 1.374.197 1.892.12.577-.087 1.786-.73 2.037-1.432.25-.701.25-1.302.175-1.43-.075-.128-.276-.2-.577-.35z"/></svg>
+                    Chat with Support
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- ADMIN ESCAPE PIN MODAL -->
+    <div id="admin-escape-modal" class="modal-overlay">
+        <div class="modal-container" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>Staff Verification</h2>
+                <button class="modal-close" onclick="app.closeModal('admin-escape-modal')">
+                    <svg viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <form id="admin-escape-form">
+                <div class="modal-body" style="text-align: center;">
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">Enter the security PIN to return to the Staff Dashboard.</p>
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <input type="password" id="escape-pin-input" class="form-control" style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem;" placeholder="••••" required maxLength="6">
+                    </div>
+                    <div id="escape-pin-error" style="display: none; color: #f87171; font-size: 0.8rem; margin-bottom: 1rem; font-weight: 600;">
+                        Invalid Security PIN.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="app.closeModal('admin-escape-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Verify & Switch</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TICKET DETAILS MODAL (STAFF VIEW) -->
+    <div id="details-modal" class="modal-overlay">
+        <div class="modal-container" style="max-width: 750px;">
+            <div class="modal-header">
+                <h2 id="modal-ticket-id">Ticket details</h2>
+                <button class="modal-close" onclick="app.closeModal('details-modal')">
+                    <svg viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="ticket-details-grid">
+                    <div class="details-section">
+                        <h3>Customer & Specification</h3>
+                        <div class="details-list">
+                            <div class="details-item"><span class="details-lbl">Customer:</span><span class="details-val" id="det-cust-name">-</span></div>
+                            <div class="details-item"><span class="details-lbl">Phone:</span><span class="details-val" id="det-cust-phone">-</span></div>
+                            <div class="details-item"><span class="details-lbl">Email:</span><span class="details-val" id="det-cust-email">-</span></div>
+                            <div class="details-item"><span class="details-lbl">Brand:</span><span class="details-val" id="det-inv-brand">-</span></div>
+                            <div class="details-item"><span class="details-lbl">Model:</span><span class="details-val" id="det-inv-model">-</span></div>
+                            <div class="details-item"><span class="details-lbl">Serial Number:</span><span class="details-val" id="det-inv-serial">-</span></div>
+                            <div class="details-item"><span class="details-lbl">Capacity:</span><span class="details-val" id="det-inv-capacity">-</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="details-section">
+                        <h3>Intake Details</h3>
+                        <div class="details-list">
+                            <div class="details-item"><span class="details-lbl">Date Brought In:</span><span class="details-val" id="det-brought-in">-</span></div>
+                            <div class="details-item"><span class="details-lbl">Registered By:</span><span class="details-val" id="det-registered-by">-</span></div>
+                        </div>
+                        <div class="details-lbl" style="margin-top: 1rem; font-weight:600; font-size:0.8rem; text-transform:uppercase;">Reported Fault:</div>
+                        <div class="details-notes-box" id="det-reported-fault">-</div>
+                    </div>
+                    
+                    <div class="details-section form-group-full">
+                        <h3>Repair Status & Diagnostics</h3>
+                        <div class="details-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <div class="details-item" style="margin-bottom:0.5rem;"><span class="details-lbl">Status:</span><span id="det-status-badge">-</span></div>
+                                <div class="details-item"><span class="details-lbl">Assigned Tech:</span><span class="details-val" id="det-technician">-</span></div>
+                                <div class="details-item"><span class="details-lbl">Date Fixed:</span><span class="details-val" id="det-fixed-date">-</span></div>
+                            </div>
+                            <div>
+                                <div class="details-item"><span class="details-lbl">Labor Cost:</span><span class="details-val" id="det-labor-cost">-</span></div>
+                                <div class="details-item"><span class="details-lbl">Parts Cost:</span><span class="details-val" id="det-parts-cost">-</span></div>
+                                <div class="details-item" style="border-top:1px solid var(--border-color); padding-top:0.25rem; font-weight:bold;"><span class="details-lbl">Total Bill:</span><span class="details-val" id="det-total-cost">-</span></div>
+                            </div>
+                        </div>
+                        <div class="details-lbl" style="margin-top: 1rem; font-weight:600; font-size:0.8rem; text-transform:uppercase;">Technical Diagnosis / Actions Taken:</div>
+                        <div class="details-notes-box" id="det-diagnostic-notes">-</div>
+                    </div>
+                    
+                    <div class="details-section form-group-full" id="det-collection-section" style="display:none;">
+                        <h3>Collection Info</h3>
+                        <div class="details-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="details-item"><span class="details-lbl">Collected Date:</span><span class="details-val" id="det-collected-date">-</span></div>
+                            <div class="details-item"><span class="details-lbl">Collected By (Signee):</span><span class="details-val" id="det-collected-by">-</span></div>
+                        </div>
+                    </div>
+
+                    <div class="details-section form-group-full">
+                        <h3>History Log & Audit Timeline</h3>
+                        <div class="audit-timeline" id="det-audit-timeline">
+                            <!-- Filled dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btn-print-gate-pass">
+                    <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4"/></svg>
+                    Print Job Card / Pass
+                </button>
+                <button class="btn btn-primary" id="btn-edit-ticket">Update Ticket</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UPDATE / EDIT TICKET MODAL (STAFF VIEW) -->
+    <div id="edit-modal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 id="edit-modal-title">Update Repair Ticket</h2>
+                <button class="modal-close" onclick="app.closeModal('edit-modal')">
+                    <svg viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <form id="edit-ticket-form">
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <input type="hidden" id="edit-ticket-idx">
+                        
+                        <div class="form-group form-group-full">
+                            <label class="form-label" for="edit-status">Repair Status</label>
+                            <select id="edit-status" class="form-control" onchange="app.handleEditStatusChange(this.value)">
+                                <option value="Checked In">Checked In</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Ready for Collection">Ready for Collection (Fixed)</option>
+                                <option value="Collected">Collected (Completed)</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="edit-tech">Assigned Technician</label>
+                            <select id="edit-tech" class="form-control">
+                                <option value="">Select Technician</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="edit-diagnosed-by">Performed / Updated By <span class="text-danger">*</span></label>
+                            <select id="edit-diagnosed-by" class="form-control" required>
+                                <option value="">Select Staff Name</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group form-group-full">
+                            <label class="form-label" for="edit-notes">Technical Diagnosis & Action Taken</label>
+                            <textarea id="edit-notes" class="form-control" placeholder="Describe diagnosis outcomes, part replacements, firmware loads, etc."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="edit-labor-cost">Labor Fee (₦)</label>
+                            <input type="number" step="0.01" min="0" id="edit-labor-cost" class="form-control" placeholder="e.g. 150.00">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="edit-parts-cost">Parts Cost (₦)</label>
+                            <input type="number" step="0.01" min="0" id="edit-parts-cost" class="form-control" placeholder="e.g. 85.00">
+                        </div>
+                        
+                        <div class="form-group form-group-full" id="edit-collected-group" style="display: none; border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 0.5rem;">
+                            <label class="form-label" for="edit-collected-by-name">Who is collecting the inverter? <span class="text-danger">*</span></label>
+                            <input type="text" id="edit-collected-by-name" class="form-control" placeholder="Name of customer or representative">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="app.closeModal('edit-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CLIENT NOTIFICATION DISPATCH MODAL -->
+    <div id="notification-modal" class="modal-overlay">
+        <div class="modal-container" style="max-width: 480px;">
+            <div class="modal-header">
+                <h2>Send Client Notification</h2>
+                <button class="modal-close" onclick="app.closeModal('notification-modal')">
+                    <svg viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+                <div class="kpi-icon" style="margin: 0 auto 1.25rem auto; background: rgba(37,211,102,0.1); color: #25d366;">
+                    <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:currentColor;"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.47l-6.256 1.638zm6.59-4.846c1.666.988 3.311 1.488 5.361 1.489 5.513 0 10.002-4.48 10.005-9.982.001-2.665-1.026-5.17-2.895-7.04-1.869-1.87-4.37-2.9-7.037-2.9-5.524 0-10.016 4.481-10.02 9.983-.001 2.01.528 3.975 1.542 5.68l-1.01 3.693 3.824-1.002zm10.963-7.445c-.302-.15-1.786-.881-2.062-.982-.276-.1-.476-.15-.676.15-.2.3-.776.982-.95 1.182-.175.2-.35.225-.652.075-.302-.15-1.275-.47-2.43-1.498-.896-.8-1.502-1.787-1.678-2.088-.175-.3-.018-.462.133-.611.135-.134.302-.35.453-.526.15-.175.2-.3.302-.5.1-.2.05-.375-.025-.526-.075-.15-.676-1.629-.926-2.228-.243-.584-.49-.504-.676-.513-.175-.009-.376-.01-.576-.01-.2 0-.526.075-.802.375-.276.3-1.052 1.028-1.052 2.51s1.077 2.903 1.227 3.102c.15.2 2.12 3.236 5.134 4.536.717.31 1.277.494 1.711.633.72.23 1.374.197 1.892.12.577-.087 1.786-.73 2.037-1.432.25-.701.25-1.302.175-1.43-.075-.128-.276-.2-.577-.35z"/></svg>
+                </div>
+                <h3 style="font-family: var(--font-heading); margin-bottom: 0.5rem;" id="notification-ticket-ref">-</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">The ticket status has been updated. Dispatch the following notification text to the customer:</p>
+                <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; font-size: 0.85rem; text-align: left; margin-bottom: 1.5rem; white-space: pre-wrap; font-family: monospace; max-height: 200px; overflow-y: auto;" id="notification-message-preview">
+                    Loading preview...
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content: center; gap: 0.75rem; padding: 1.25rem;">
+                <button type="button" class="btn btn-secondary" onclick="app.closeModal('notification-modal')">Dismiss</button>
+                <a id="btn-dispatch-whatsapp" target="_blank" class="btn btn-primary" style="background:#25d366; border-color:#25d366; box-shadow: 0 4px 14px rgba(37,211,102,0.3);">
+                    Send WhatsApp
+                </a>
+                <a id="btn-dispatch-email" class="btn btn-primary">
+                    Send Email
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- PRINT VIEW WRAPPER -->
+    <div class="printable-pass-wrapper" id="printable-pass">
+        <div class="print-card">
+            <div class="print-header" style="position: relative;">
+                <!-- Printable Logo placeholder -->
+                <div id="print-logo-box" style="display:none; justify-content:center; margin-bottom:1rem;">
+                    <img id="print-logo-img" src="" alt="Logo" style="height: 50px; object-fit: contain;">
+                </div>
+                <h1 id="print-company-name">INVERTERHUB SERVICE DESK</h1>
+                <p>12 Technology Drive, Science Park | Phone: +1 555-0100</p>
+                <p style="font-weight: bold; margin-top: 0.5rem; font-size: 1.1rem;" id="print-document-type">REPAIR GATE PASS / JOB CARD</p>
+            </div>
+            <div class="print-body">
+                <div class="print-row"><span class="print-row-lbl">Ticket Reference:</span><span class="print-row-val" id="print-ticket-id" style="font-weight: bold;">-</span></div>
+                <div class="print-row"><span class="print-row-lbl">Brought In Date:</span><span class="print-row-val" id="print-brought-in">-</span></div>
+                <div class="print-row"><span class="print-row-lbl">Registered By:</span><span class="print-row-val" id="print-registered-by">-</span></div>
+                <div class="print-row"><span class="print-row-lbl">Status:</span><span class="print-row-val" id="print-status">-</span></div>
+                
+                <h3 style="margin-top: 1.5rem; margin-bottom: 0.5rem; border-bottom: 1px solid #000; padding-bottom: 0.25rem;">CUSTOMER DETAILS</h3>
+                <div class="print-row"><span class="print-row-lbl">Customer Name:</span><span class="print-row-val" id="print-cust-name">-</span></div>
+                <div class="print-row"><span class="print-row-lbl">Phone:</span><span class="print-row-val" id="print-cust-phone">-</span></div>
+                
+                <h3 style="margin-top: 1.5rem; margin-bottom: 0.5rem; border-bottom: 1px solid #000; padding-bottom: 0.25rem;">DEVICE SPECIFICATIONS</h3>
+                <div class="print-row"><span class="print-row-lbl">Brand / Model:</span><span class="print-row-val" id="print-inv-spec">-</span></div>
+                <div class="print-row"><span class="print-row-lbl">Serial Number:</span><span class="print-row-val" id="print-inv-serial">-</span></div>
+                <div class="print-row"><span class="print-row-lbl">Capacity:</span><span class="print-row-val" id="print-inv-capacity">-</span></div>
+                
+                <h3 style="margin-top: 1.5rem; margin-bottom: 0.5rem; border-bottom: 1px solid #000; padding-bottom: 0.25rem;">FAULT DESCRIPTION & SERVICE ACTIONS</h3>
+                <div class="print-row" style="flex-direction: column; align-items: flex-start; border-bottom: none;"><span class="print-row-lbl">Reported Problem:</span><span class="print-row-val" id="print-reported-fault" style="text-align: left; width: 100%; margin-top: 0.25rem; font-style: italic;">-</span></div>
+                <div class="print-row" style="flex-direction: column; align-items: flex-start; border-bottom: none; margin-top: 0.75rem;"><span class="print-row-lbl">Technical Resolution:</span><span class="print-row-val" id="print-resolution" style="text-align: left; width: 100%; margin-top: 0.25rem; font-style: italic;">-</span></div>
+                
+                <h3 style="margin-top: 1.5rem; margin-bottom: 0.5rem; border-bottom: 1px solid #000; padding-bottom: 0.25rem;">FINANCIAL SUMMARY</h3>
+                <div class="print-row"><span class="print-row-lbl">Labor Fee:</span><span class="print-row-val" id="print-labor-cost">₦0.00</span></div>
+                <div class="print-row"><span class="print-row-lbl">Replacement Parts:</span><span class="print-row-val" id="print-parts-cost">₦0.00</span></div>
+                <div class="print-row" style="border-bottom: 2px solid #000; padding-bottom: 0.5rem; font-size: 1.1rem; font-weight: bold;"><span class="print-row-lbl">Total Charges:</span><span class="print-row-val" id="print-total-cost">₦0.00</span></div>
+
+                <div class="print-signature-area">
+                    <div class="signature-line">Service Representative Signature</div>
+                    <div class="signature-line" id="print-signee-title">Customer Release Signature</div>
+                </div>
+            </div>
+            <div class="print-footer">
+                <p>Thank you for choosing <span class="print-footer-company-name">InverterHub</span>.</p>
+                <p>Repairs carry a standard 90-day warranty on replaced parts only.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script src="app.js"></script>
+    <script>
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registered!'))
+                    .catch(err => console.error('Service Worker registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>
